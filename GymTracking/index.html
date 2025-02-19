@@ -9,13 +9,13 @@
         body {
             font-family: Arial, sans-serif;
             text-align: center;
-            background-color: #000;
+            background-color: #111;
             color: #fff;
             padding: 20px;
         }
         .progress-bar-container {
             width: 100%;
-            background-color: #333;
+            background-color: #222;
             border-radius: 5px;
             overflow: hidden;
             margin: 10px 0;
@@ -33,13 +33,13 @@
         }
         .day {
             padding: 10px;
-            background-color: #444;
+            background-color: #333;
             cursor: pointer;
             border-radius: 5px;
             transition: 0.3s;
         }
         .day:hover {
-            background-color: #666;
+            background-color: #555;
         }
         .completed {
             background-color: #4CAF50 !important;
@@ -50,9 +50,10 @@
             font-style: italic;
             margin-top: 20px;
         }
-        .image-container img {
-            width: 100%;
-            border-radius: 50px;
+        .weight-change {
+            margin-top: 10px;
+            font-size: 16px;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -66,20 +67,13 @@
         <p id="progress-text"></p>
         <div class="calendar" id="calendar"></div>
         <button class="btn btn-danger mt-3" onclick="resetProgress()">Reset Progress</button>
-        <div class="row mt-4 align-items-center">
-            <div class="col-md-6 text-center">
-                <p class="quote">"Your body can stand almost anything. It’s your mind that you have to convince."</p>
-            </div>
-            <div class="col-md-6 text-center">
-                <img src="./img.jpg" alt="Fitness Progress" class="img-fluid rounded">
-            </div>
-        </div>
         <div class="mt-4">
             <h2>Weight Tracking</h2>
             <input type="number" id="weight" class="form-control w-50 mx-auto" placeholder="Enter your weight (kg)">
             <button class="btn btn-success mt-2" onclick="saveWeight()">Save Weight</button>
             <h3 class="mt-3">Weight Log</h3>
             <ul id="weight-log" class="list-group w-50 mx-auto text-dark"></ul>
+            <p id="weight-change" class="weight-change"></p>
         </div>
     </div>
     <script>
@@ -95,11 +89,6 @@
             const progress = (completedDays.length / totalDays) * 100;
             document.getElementById("progress").style.width = progress + "%";
             document.getElementById("progress-text").innerText = `${completedDays.length} days completed`;
-        }
-
-        function getFormattedDate(date) {
-            const options = { day: 'numeric', month: 'short' };
-            return date.toLocaleDateString('en-US', options);
         }
 
         function toggleDay(dateStr) {
@@ -125,7 +114,7 @@
                 if (completedDays.includes(dateStr)) {
                     dayElem.classList.add("completed");
                 }
-                dayElem.innerText = getFormattedDate(date);
+                dayElem.innerText = `${date.getDate()}-${date.toLocaleString('en-US', { month: 'short' })}`;
                 dayElem.onclick = () => toggleDay(dateStr);
                 calendar.appendChild(dayElem);
             }
@@ -142,7 +131,7 @@
             let weight = document.getElementById("weight").value;
             if (weight) {
                 let date = new Date().toLocaleDateString('en-US');
-                weightLog.push(`${date}: ${weight} kg`);
+                weightLog.push({ date, weight: parseFloat(weight) });
                 localStorage.setItem("weightLog", JSON.stringify(weightLog));
                 renderWeightLog();
             }
@@ -154,9 +143,18 @@
             weightLog.forEach(entry => {
                 let li = document.createElement("li");
                 li.classList.add("list-group-item");
-                li.innerText = entry;
+                li.innerText = `${entry.date}: ${entry.weight} kg`;
                 logElement.appendChild(li);
             });
+            calculateWeightChange();
+        }
+
+        function calculateWeightChange() {
+            if (weightLog.length < 2) return;
+            let first = weightLog[0].weight;
+            let last = weightLog[weightLog.length - 1].weight;
+            let change = last - first;
+            document.getElementById("weight-change").innerText = `Weight change: ${change > 0 ? '+' : ''}${change} kg`;
         }
 
         renderCalendar();
@@ -165,4 +163,5 @@
     </script>
 </body>
 </html>
+
 
