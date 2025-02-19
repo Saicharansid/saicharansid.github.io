@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fitness Tracking for Sid</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #000;
+            color: #fff;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .progress-bar {
+            width: 100%;
+            background-color: #333;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress {
+            height: 20px;
+            background-color: #4CAF50;
+            width: 0%;
+        }
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            margin: 20px auto;
+            max-width: 350px;
+        }
+        .day {
+            padding: 10px;
+            background-color: #444;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+        .day:hover {
+            background-color: #666;
+        }
+        .completed {
+            background-color: #4CAF50 !important;
+            color: white;
+        }
+        button {
+            background-color: #f00;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 20px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #c00;
+        }
+        .quote {
+            font-size: 18px;
+            font-style: italic;
+            margin-top: 20px;
+            margin-left: 150px;
+        }
+        .image-container {
+            max-width: 300px;
+            /*margin-left: 100px;*/
+            position: absolute; /* Takes it out of normal flow */
+            right: 50px; /* Adjust this value to move it more right */
+            top: 50%; /* Adjust vertical positioning as needed */
+            transform: translateY(-50%);
+        }
+        .image-container img {
+            width: 100%;
+            border-radius: 50px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Fitness Tracking for Sid</h1>
+    <div class="container">
+        <div>
+            <p id="countdown"></p>
+            <div class="progress-bar"><div class="progress" id="progress"></div></div>
+            <p id="progress-text"></p>
+            <div class="calendar" id="calendar"></div>
+            <button onclick="resetProgress()">Reset Progress</button>
+        </div>
+        <div class="image-container">
+            <img src="./img.jpg" alt="Fitness Progress">
+            <p class="quote">"Your body can stand almost anything. It’s your mind that you have to convince."</p>
+        </div>
+    </div>
+    <script>
+        const startDate = new Date("2025-02-19");
+        const endDate = new Date("2025-05-13");
+        const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+        let completedDays = JSON.parse(localStorage.getItem("completedDays")) || [];
+
+        document.getElementById("countdown").innerText = `${totalDays - completedDays.length} days remaining until May 13, 2025`;
+
+        function updateProgress() {
+            const progress = (completedDays.length / totalDays) * 100;
+            document.getElementById("progress").style.width = progress + "%";
+            document.getElementById("progress-text").innerText = `${completedDays.length} days completed`;
+        }
+
+        function getFormattedDate(date) {
+            const options = { day: 'numeric', month: 'short' };
+            return date.toLocaleDateString('en-US', options);
+        }
+
+        function toggleDay(dateStr) {
+            if (completedDays.includes(dateStr)) {
+                completedDays = completedDays.filter(d => d !== dateStr);
+            } else {
+                completedDays.push(dateStr);
+            }
+            localStorage.setItem("completedDays", JSON.stringify(completedDays));
+            renderCalendar();
+            updateProgress();
+        }
+
+        function renderCalendar() {
+            const calendar = document.getElementById("calendar");
+            calendar.innerHTML = "";
+            for (let i = 0; i < totalDays; i++) {
+                let date = new Date(startDate);
+                date.setDate(date.getDate() + i);
+                let dateStr = date.toISOString().split("T")[0];
+                let dayElem = document.createElement("div");
+                dayElem.classList.add("day");
+                if (completedDays.includes(dateStr)) {
+                    dayElem.classList.add("completed");
+                }
+                dayElem.innerText = getFormattedDate(date);
+                dayElem.onclick = () => toggleDay(dateStr);
+                calendar.appendChild(dayElem);
+            }
+        }
+
+        function resetProgress() {
+            completedDays = [];
+            localStorage.setItem("completedDays", JSON.stringify(completedDays));
+            renderCalendar();
+            updateProgress();
+        }
+
+        renderCalendar();
+        updateProgress();
+    </script>
+</body>
+</html>
